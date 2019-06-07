@@ -1,4 +1,4 @@
-# Sanderling
+# Possible Outdated Sanderling
 
 **Sanderling is a framework that helps you create and run [eve online](https://www.eveonline.com) bots.**
 
