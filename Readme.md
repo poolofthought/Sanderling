@@ -4,7 +4,9 @@
 
 ### Free (as in beer), but possibly outdated
 
-Up to a certain version use of the framework was free. At some point, running bots began costing monthly credits. I've attempted to fork the project from back when it was free to run the bots. This took it back to a late 2017 state. 
+Up to a certain version use of the Sanderling framework was free to create and run eve online bots. 
+
+At some point running bots began costing monthly credits. I've attempted to fork the project from back when it was free to run the bots. This took it back to a late 2017 state. 
 
 IMPORTANT: This means that trying to copy bots directly from the botengine forum may not work out of the box. Some things do but some do not. Some coding / work arounds may be required to get "new" bots to work with this older version. If you are uncomfortable with this then it is recommended you just pay for the bot credits and use the up-to-date, ready to go bot from the orignal project (next section).
 
