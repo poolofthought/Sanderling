@@ -22,11 +22,11 @@ using Parse = Sanderling.Parse;
 
 //	Bookmarks of places to mine. Add additional bookmarks separated by comma.
 string[] SetMiningSiteBookmark = new[] {
-	"mining_site_bookmark_name",
-	};
+	"mining_site_bookmark_name", "MiningSpot1", "MiningSpot2", "MiningSpot3", "MiningSpot4", "MiningSpot5"
+    };
 
 //	Bookmark of location where ore should be unloaded.
-string UnloadBookmark = "station_or_POS_bookmark_name";
+string UnloadBookmark = "MiningDropoffStation";
 
 //	Name of the container to unload to as shown in inventory.
 string UnloadDestContainerName = "Item Hangar";
@@ -52,6 +52,7 @@ var FightAllRats = false;	//	when this is set to true, the bot will attack rats 
 
 var EnterOffloadOreHoldFillPercent = 95;	//	percentage of ore hold fill level at which to enter the offload process.
 
+// For lowsec, set this to true. For highsec, false is fine.
 var RetreatOnNeutralOrHostileInLocal = false;   // warp to RetreatBookmark when a neutral or hostile is visible in local.
 
 bool returnDronesToBayOnRetreat = false; // when set to true, bot will attempt to dock back the drones before retreating
@@ -581,7 +582,16 @@ void Undock()
 {
 	while(Measurement?.IsDocked ?? true)
 	{
-		Sanderling.MouseClickLeft(Measurement?.WindowStation?.FirstOrDefault()?.UndockButton);
+		// get the window that is the station controls
+		var ws = Measurement?.WindowStation?.FirstOrDefault();
+
+		// within that window find a button with the text that looks like undock
+		var ButtonUndock = ws.ButtonText?.FirstOrDefault(button => (button?.Text).RegexMatchSuccessIgnoreCase("undock"));
+        Sanderling.MouseClickLeft(ButtonUndock);
+
+		// TODO: It appears that UndockButton (built in to Sanderling) no longer works out of the box (we can still find it though as seen above)
+        //Sanderling.MouseClickLeft(Measurement?.WindowStation?.FirstOrDefault()?.UndockButton);
+
 		Host.Log("waiting for undocking to complete.");
 		Host.Delay(8000);
 	}

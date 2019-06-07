@@ -126,7 +126,7 @@ namespace Sanderling.Exe
 
 		void InterfaceExchange()
 		{
-			LicenseClientExchange();
+			//LicenseClientExchange();
 
 			var EveOnlineClientProcessId = this.EveOnlineClientProcessId;
 
