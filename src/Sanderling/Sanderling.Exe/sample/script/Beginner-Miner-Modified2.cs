@@ -48,6 +48,7 @@ string UnloadDestContainerName = "Item Hangar";
 //	When this is set to true, the bot will try to unload when undocked.
 bool UnloadInSpace = false;
 
+string AllowableAsteroidType = "VELDSPAR"; // MUST BE ALL CAPS if used - can only specify one type to mine - if blank then will just mine closest
 //	<- End of configuration section
 
 
@@ -344,9 +345,11 @@ Parse.IOverviewEntry[] ListRatOverviewEntry => WindowOverview?.ListView?.Entry?.
         ?.OrderBy(entry => entry?.DistanceMax ?? int.MaxValue)
         ?.ToArray();
 
+// adjusted to only hunt veldspar. Ideally we could make this a bit better
 Parse.IOverviewEntry[] ListAsteroidOverviewEntry =>
     WindowOverview?.ListView?.Entry
     ?.Where(entry => null != OreTypeFromAsteroidName(entry?.Name))
+    ?.Where(entry => true == entry?.Name.ToUpper().Trim().Contains(AllowableAsteroidType))
     ?.OrderBy(entry => entry.DistanceMax ?? int.MaxValue)
     ?.ToArray();
 
@@ -767,8 +770,7 @@ void RetreatUpdate()
 
     if (hostileOrNeutralsInLocal)
     {
-        Host.Log("Expected 3... but got: " + Sanderling.MemoryMeasurementParsed?.Value?.WindowStack?.FirstOrDefault()?.LabelText?.ToList().Count);
-        Host.Log("Make sure to clear your local window of everything for this work");
+        Host.Log("System overcrowded. Expected '3' StackWindows in local, but found: " + Sanderling.MemoryMeasurementParsed?.Value?.WindowStack?.FirstOrDefault()?.LabelText?.ToList().Count.ToString() + "[Make sure to clear your local window of all messages / notifications for this work]");
     }
 
     RetreatReasonTemporary = (RetreatOnNeutralOrHostileInLocal && hostileOrNeutralsInLocal) ? "hostile or neutral in local" : null;
