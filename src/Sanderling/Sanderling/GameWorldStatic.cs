@@ -26,7 +26,7 @@
 	public enum OreTypeEnum
 	{
 		None = 0,
-		Arkonor = 100,
+		Arkonor = 100, // moon ore
 		Bistot = 110,
 		Crokite = 120,
 		Dark_Ochre = 130,
@@ -37,10 +37,13 @@
 		Kernite = 180,
 		Mercoxit = 190,
 		Omber = 200,
+		Otavite = 205, // uncommon moon ore
 		Plagioclase = 210,
+		Pollucite = 215, // rare moon ore
 		Pyroxeres = 220,
 		Scordite = 230,
 		Spodumain = 240,
+		Titanite = 245, // common moon
 		Veldspar = 250,
 	}
 }
