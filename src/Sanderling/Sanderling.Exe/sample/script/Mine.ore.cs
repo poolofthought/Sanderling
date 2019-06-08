@@ -22,7 +22,8 @@ using Parse = Sanderling.Parse;
 
 //	Bookmarks of places to mine. Add additional bookmarks separated by comma.
 string[] SetMiningSiteBookmark = new[] {
-	"mining_site_bookmark_name", "MiningSpot1", "MiningSpot2", "MiningSpot3", "MiningSpot4", "MiningSpot5"
+	"mining_site_bookmark_name", "MiningSpot1", "MiningSpot2", "MiningSpot3", "MiningSpot4", "MiningSpot5", "MiningSpot6",
+	"MiningSpot7", "MiningSpot8", "MiningSpot9", "MiningSpot10"
     };
 
 //	Bookmark of location where ore should be unloaded.
@@ -46,11 +47,11 @@ var ActivateHardener = true; // activate shield hardener.
 var DefenseEnterHitpointThresholdPercent = 85;
 var DefenseExitHitpointThresholdPercent = 90;
 
-var EmergencyWarpOutHitpointPercent = 60;
+var EmergencyWarpOutHitpointPercent = 90;
 
 var FightAllRats = false;	//	when this is set to true, the bot will attack rats independent of shield hp.
 
-var EnterOffloadOreHoldFillPercent = 95;	//	percentage of ore hold fill level at which to enter the offload process.
+var EnterOffloadOreHoldFillPercent = 90;	//	percentage of ore hold fill level at which to enter the offload process.
 
 // For lowsec, set this to true. For highsec, false is fine.
 var RetreatOnNeutralOrHostileInLocal = false;   // warp to RetreatBookmark when a neutral or hostile is visible in local.
