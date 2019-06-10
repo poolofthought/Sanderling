@@ -19,6 +19,10 @@ namespace Sanderling.Exe
 		{
 			yield return new[] { Key.LeftCtrl, Key.LeftAlt };
 			yield return new[] { Key.RightCtrl, Key.RightAlt };
+
+
+			System.Random rand = new System.Random();
+			rand.Next(6); // returnsa non negative integer that is less than the specified value
 		}
 
 		StatusIcon.StatusEnum BotStatus => ScriptEngineStatus;

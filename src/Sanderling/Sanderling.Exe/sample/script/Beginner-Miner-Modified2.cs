@@ -58,6 +58,10 @@ Func<object> NextActivity = MainStep;
 
 Queue<string> visitedLocations = new Queue<string>();
 
+// Set up a random number generator to enable selecting a random asteroid belt
+// NOTE: This might ruin the whole "memory" thing, but it was jacked up anyway so hopefully this will help.
+System.Random rand = new System.Random();
+
 // State used to track total mined ore. -->
 struct StatisticsMeasurementSnapshot
 {
@@ -484,12 +488,26 @@ bool InitiateWarpToRetreat() =>
 
 MemoryStruct.IMenuEntry PickNextMiningSiteFromSystemMenu(IReadOnlyList<MemoryStruct.IMenuEntry> availableMenuEntries)
 {
+    int cnt = 0;
+    if (availableMenuEntries?.Count == null)
+    {
+        // TOOD: bad    
+    }
+    else if ((availableMenuEntries.Count == 0))
+    {
+        // TODO: bad 
+    }
+    else
+    {
+        cnt = availableMenuEntries.Count;
+    }
+
     Host.Log("I am seeing " + availableMenuEntries?.Count.ToString() + " mining sites to choose from.");
 
     var nextSite =
         availableMenuEntries
         ?.OrderBy(menuEntry => visitedLocations.ToList().IndexOf(menuEntry?.Text))
-        ?.FirstOrDefault();
+        ?.ElementAtOrDefault(rand.Next(cnt));
 
     Host.Log("I pick '" + nextSite?.Text + "' as next mining site, based on the intent to rotate through the mining sites and recorded previous locations.");
     return nextSite;
