@@ -14,6 +14,9 @@ Before running this bot, prepare the EVE online client as follows:
 + In the ship UI, disable "Display Passive Modules" and disable "Display Empty Slots" and enable "Display Module Tooltips". The bot uses the module tooltips to automatically identify the properties of the modules.
 
 This bot tracks the total mined amount of ore by watching inventory volume while mining modules are active.
+
+TODO: Add ability to replace worn out crystal.
+TODO: Other TODOs as listed.
 */
 
 using BotSharp.ToScript.Extension;
@@ -34,7 +37,7 @@ var SwitchMiningSiteHitpointThresholdPercent = 85;
 var EmergencyWarpOutHitpointPercent = 60;
 
 //	Percentage of fill level at which to enter the offload process.
-var EnterOffloadOreContainerFillPercent = 95;
+var EnterOffloadOreContainerFillPercent = 94;
 
 //	Warp to station when a neutral or hostile is visible in local.
 //    Lowsec, value should be true
@@ -84,6 +87,7 @@ Host.Log(
 		"ore container fill: " + OreContainerFillPercent + "%" +
 		", mining range: " + MiningRange +
 		", mining modules (inactive): " + SetModuleMiner?.Length + "(" + SetModuleMinerInactive?.Length + ")" +
+		", mining modules (active): " + + SetModuleMiner?.Length + "(" + SetModuleMinerIsActive?.Length + ")" +
 		", shield.hp: " + ShieldHpPercent + "%" +
 		", retreat: " + RetreatReason + 
 		", JLA: " + JammedLastAge +
@@ -213,8 +217,13 @@ void CloseModalUIElement()
     Sanderling.MouseClickLeft(ButtonClose);
 }
 
+var timesThroughWithCurrentModuleRun = 0;
+
 Func<object> InBeltMineStep()
 {
+    var howLongToDelayBetweenInactiveMinerChecksInMilliSeconds = 6000;
+    var forceMiningModuleRuntimesToAboutThisManySeconds = 60; // configuration to allow long running mining modules to run in shorter bursts so they don't waste a ton of time running if there's only a small amount of rock left - removing wasted time 
+
     if (ShouldSwitchMiningSite)
         return MainStep;
 
@@ -229,7 +238,32 @@ Func<object> InBeltMineStep()
 
     if (null == moduleMinerInactive)
     {
-        DelayWhileUpdatingMemory(6000);
+        Host.Log("Mining modules should run about this long before forced reset: " + (forceMiningModuleRuntimesToAboutThisManySeconds * 1000).ToString());
+        Host.Log("Mining modules have been running about this long since last forced reset: " + (howLongToDelayBetweenInactiveMinerChecksInMilliSeconds * timesThroughWithCurrentModuleRun).ToString());
+
+        if ((forceMiningModuleRuntimesToAboutThisManySeconds * 1000) < (howLongToDelayBetweenInactiveMinerChecksInMilliSeconds * timesThroughWithCurrentModuleRun))
+        {
+            // if we are here we want to shorten the run so stop it now to allow for discovery of a finished asteroid sooner
+            // we want to toggle off the mining modules
+            timesThroughWithCurrentModuleRun = 0;
+            bool moreActive = true;
+            while (moreActive)
+            {
+                var ModuleMinerActive = SetModuleMinerIsActive?.FirstOrDefault();
+                if (ModuleMinerActive != null)
+                    ModuleToggle(ModuleMinerActive);
+                else
+                    moreActive = false;
+
+            }
+        }
+        else
+        {
+            timesThroughWithCurrentModuleRun += 1;
+            Host.Log("Mining module checkin count since last reset: " + timesThroughWithCurrentModuleRun.ToString());
+            DelayWhileUpdatingMemory(howLongToDelayBetweenInactiveMinerChecksInMilliSeconds);
+        }
+
         return InBeltMineStep;
     }
 
@@ -375,7 +409,10 @@ Sanderling.Accumulation.IShipUiModule[] SetModuleMiner =>
     Sanderling.MemoryMeasurementAccu?.Value?.ShipUiModule?.Where(module => module?.TooltipLast?.Value?.IsMiner ?? false)?.ToArray();
 
 Sanderling.Accumulation.IShipUiModule[] SetModuleMinerInactive =>
-    SetModuleMiner?.Where(module => !(module?.RampActive ?? false))?.ToArray();
+    SetModuleMiner?.Where(module => !(module?.RampActive ?? false))?.ToArray(); // if it is there and it's not RampActive then is is inactive - assumption is not there then also inactive
+
+Sanderling.Accumulation.IShipUiModule[] SetModuleMinerIsActive =>
+    SetModuleMiner?.Where(module => (module?.RampActive ?? false))?.ToArray();   // if it's not there, it's not active
 
 int? MiningRange => SetModuleMiner?.Select(module =>
  module?.TooltipLast?.Value?.RangeOptimal ?? module?.TooltipLast?.Value?.RangeMax ?? module?.TooltipLast?.Value?.RangeWithin ?? 0)?.DefaultIfEmpty(0)?.Min();;
