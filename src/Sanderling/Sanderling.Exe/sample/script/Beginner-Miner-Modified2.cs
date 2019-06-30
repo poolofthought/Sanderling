@@ -51,7 +51,7 @@ string UnloadDestContainerName = "Item Hangar";
 //	When this is set to true, the bot will try to unload when undocked.
 bool UnloadInSpace = false;
 
-string AllowableAsteroidType = "VELDSPAR"; // MUST BE ALL CAPS if used - can only specify one type to mine - if blank then will just mine closest
+
 //	<- End of configuration section
 
 
@@ -383,11 +383,9 @@ Parse.IOverviewEntry[] ListRatOverviewEntry => WindowOverview?.ListView?.Entry?.
         ?.OrderBy(entry => entry?.DistanceMax ?? int.MaxValue)
         ?.ToArray();
 
-// adjusted to only hunt veldspar. Ideally we could make this a bit better
 Parse.IOverviewEntry[] ListAsteroidOverviewEntry =>
     WindowOverview?.ListView?.Entry
     ?.Where(entry => null != OreTypeFromAsteroidName(entry?.Name))
-    ?.Where(entry => true == entry?.Name.ToUpper().Trim().Contains(AllowableAsteroidType))
     ?.OrderBy(entry => entry.DistanceMax ?? int.MaxValue)
     ?.ToArray();
 
