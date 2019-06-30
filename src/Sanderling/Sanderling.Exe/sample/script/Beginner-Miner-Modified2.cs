@@ -217,13 +217,8 @@ void CloseModalUIElement()
     Sanderling.MouseClickLeft(ButtonClose);
 }
 
-var timesThroughWithCurrentModuleRun = 0;
-
 Func<object> InBeltMineStep()
 {
-    var howLongToDelayBetweenInactiveMinerChecksInMilliSeconds = 6000;
-    var forceMiningModuleRuntimesToAboutThisManySeconds = 60; // configuration to allow long running mining modules to run in shorter bursts so they don't waste a ton of time running if there's only a small amount of rock left - removing wasted time 
-
     if (ShouldSwitchMiningSite)
         return MainStep;
 
@@ -236,34 +231,9 @@ Func<object> InBeltMineStep()
 
     var moduleMinerInactive = SetModuleMinerInactive?.FirstOrDefault();
 
+	// If a there are no inactive mining modules then nothing to do... keep on mining
     if (null == moduleMinerInactive)
     {
-        Host.Log("Mining modules should run about this long before forced reset: " + (forceMiningModuleRuntimesToAboutThisManySeconds * 1000).ToString());
-        Host.Log("Mining modules have been running about this long since last forced reset: " + (howLongToDelayBetweenInactiveMinerChecksInMilliSeconds * timesThroughWithCurrentModuleRun).ToString());
-
-        if ((forceMiningModuleRuntimesToAboutThisManySeconds * 1000) < (howLongToDelayBetweenInactiveMinerChecksInMilliSeconds * timesThroughWithCurrentModuleRun))
-        {
-            // if we are here we want to shorten the run so stop it now to allow for discovery of a finished asteroid sooner
-            // we want to toggle off the mining modules
-            timesThroughWithCurrentModuleRun = 0;
-            bool moreActive = true;
-            while (moreActive)
-            {
-                var ModuleMinerActive = SetModuleMinerIsActive?.FirstOrDefault();
-                if (ModuleMinerActive != null)
-                    ModuleToggle(ModuleMinerActive);
-                else
-                    moreActive = false;
-
-            }
-        }
-        else
-        {
-            timesThroughWithCurrentModuleRun += 1;
-            Host.Log("Mining module checkin count since last reset: " + timesThroughWithCurrentModuleRun.ToString());
-            DelayWhileUpdatingMemory(howLongToDelayBetweenInactiveMinerChecksInMilliSeconds);
-        }
-
         return InBeltMineStep;
     }
 
