@@ -6,19 +6,21 @@ This bot mines ore only with drones. It using a bookmark folder for chosen belts
 Before running this bot, prepare the EVE online client as follows:
 + Set the UI language to english.
 + Move your mining ship to a solar system which has asteroid belts and at least one station in which you can dock.
-+ In the Overview, create a preset which includes asteroids and rats and enter the name of that preset in the configuration section below at 'OverviewPreset'. The bot will make sure this preset is loaded when it needs to use the overview.
++ In the Overview, create a preset which includes asteroids and rats and enter the name of that preset in the configuration section below at 'OverviewPreset'. 
++    The bot will make sure this preset is loaded when it needs to use the overview.
 + Set Overview to sort by distance with the nearest entry at the top.
 + In the Inventory, select the 'List' view.
 + Enable the info panel 'System info'. The bot needs this to find asteroid belts and stations.
 + Arrange windows to not occlude ship modules or info panels.
-+ Create your own bookmark "home"
++ Create your own bookmark "home" (not sure what this is for)
++ Create a bookmark in the regular folder and name it whatever you want, but it is the unload location. Update the name of the variable UnloadBookmark with whatever you name yours.
 + Create your own Folder for mining Belts
- ( for now is named asteroid belts. If you change him, change also in script settings)
-+ Only if you change the folder name for bookmarks, create your own bookmarks for mining and put them INSIDE of folder
-Preparations of bot:
-+ fill/change the MiningRange
+ ( for now it should be named "OrcaMiningFolder" If you change it, change also in script settings. )
++ Create your own bookmarks for mining and put them INSIDE of folder
+
++ Preparations of bot:
++ fill/change the MiningRange (15/18 are probably good because the bot will approach them anyway the the drones won't have to fly that far the whole time)
 + DroneNumber
-+ Change the name on folder for bookmarks (if you need)
 + At what lvl of ore hold you go to unload
 This script is based on Terpla && Viir scripts and adapted 
 */
@@ -30,18 +32,18 @@ using Parse = Sanderling.Parse;
 //	Begin of configuration section ->
 
 //	The bot loads this preset to the active tab in the Overview window.
-string OverviewPreset = null;
+string OverviewPreset = "Porpmining";
 
 //	Activate shield hardener.
 var ActivateHardener = true;
 
 //mining range (in metric)
-int MiningRange = 8000;
+int MiningRange = 18000;
 // drones
 int DroneNumber = 5;
 
 //the name of folder of bookmarks for mining
-string FolderBeltsMining = "Orca";
+string FolderBeltsMining = "OrcaMiningFolder";
 
 //	Name of the container to unload to as shown in inventory.
 string UnloadDestContainerName = "Item Hangar";
@@ -56,9 +58,6 @@ var EnterOffloadOreContainerFillPercent = 98;
 var SwitchMiningSiteHitpointThresholdPercent = 95;
 
 var EmergencyWarpOutHitpointPercent = 90;
-
-
-
 
 
 //	Bookmark of place to retreat to to prevent ship loss.
@@ -78,7 +77,9 @@ Func<object> NextActivity = MainStep;
 
 Queue<string> visitedLocations = new Queue<string>();
 
-
+// Set up a random number generator to enable selecting a random asteroid belt
+// NOTE: This might ruin the whole "memory" thing, but it was jacked up anyway so hopefully this will help.
+System.Random rand = new System.Random();
 
 for(;;)
 {
@@ -563,14 +564,41 @@ void InInventoryUnloadItemsTo(string DestinationContainerName)
 bool InitiateWarpToMiningSite() =>
     InitiateDockToOrWarpToLocationInSolarSystemMenu(FolderBeltsMining, PickNextMiningSiteFromSystemMenu);
 
+//MemoryStruct.IMenuEntry PickNextMiningSiteFromSystemMenu(IReadOnlyList<MemoryStruct.IMenuEntry> availableMenuEntries)
+//{
+//    Host.Log("I am seeing " + availableMenuEntries?.Count.ToString() + " mining sites to choose from.");
+
+//    var nextSite =
+//        availableMenuEntries
+//        ?.OrderBy(menuEntry => visitedLocations.ToList().IndexOf(menuEntry?.Text))
+//        ?.FirstOrDefault();
+
+//    Host.Log("I pick '" + nextSite?.Text + "' as next mining site, based on the intent to rotate through the mining sites and recorded previous locations.");
+//    return nextSite;
+//}
+
 MemoryStruct.IMenuEntry PickNextMiningSiteFromSystemMenu(IReadOnlyList<MemoryStruct.IMenuEntry> availableMenuEntries)
 {
+    int cnt = 0;
+    if (availableMenuEntries?.Count == null)
+    {
+        // TOOD: bad    
+    }
+    else if ((availableMenuEntries.Count == 0))
+    {
+        // TODO: bad 
+    }
+    else
+    {
+        cnt = availableMenuEntries.Count;
+    }
+
     Host.Log("I am seeing " + availableMenuEntries?.Count.ToString() + " mining sites to choose from.");
 
     var nextSite =
         availableMenuEntries
         ?.OrderBy(menuEntry => visitedLocations.ToList().IndexOf(menuEntry?.Text))
-        ?.FirstOrDefault();
+        ?.ElementAtOrDefault(rand.Next(cnt));
 
     Host.Log("I pick '" + nextSite?.Text + "' as next mining site, based on the intent to rotate through the mining sites and recorded previous locations.");
     return nextSite;
@@ -643,9 +671,27 @@ void Undock()
 {
     while (Measurement?.IsDocked ?? true)
     {
-        Sanderling.MouseClickLeft(Measurement?.WindowStation?.FirstOrDefault()?.UndockButton);
+        ///////////OLD CODE
+        //Sanderling.MouseClickLeft(Measurement?.WindowStation?.FirstOrDefault()?.UndockButton);
+        //Host.Log("waiting for undocking to complete.");
+        //Host.Delay(8000);
+        ///////////END OLD CODE
+        ///
+        
+		// TODO: It appears that UndockButton (built in to Sanderling) no longer works out of the box (we can still find it though as seen above)
+        //Sanderling.MouseClickLeft(Measurement?.WindowStation?.FirstOrDefault()?.UndockButton);
+
+        // get the window that is the station controls
+        var ws = Measurement?.WindowStation?.FirstOrDefault();
+
+        // within that window find a button with the text that looks like undock
+        var ButtonUndock = ws.ButtonText?.FirstOrDefault(button => (button?.Text).RegexMatchSuccessIgnoreCase("undock"));
+        Sanderling.MouseClickLeft(ButtonUndock);
+
         Host.Log("waiting for undocking to complete.");
         Host.Delay(8000);
+		     
+
     }
 
     Host.Delay(4444);
